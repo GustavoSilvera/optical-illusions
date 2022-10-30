@@ -9,6 +9,9 @@ Open this in your terminal app
 # Installation
 Create a conda installation with:
 ```bash
+pip install pygame numpy
+
+# or
 conda install -r requirements.txt
 pip install -r requirements.txt
 ```
