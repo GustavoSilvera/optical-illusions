@@ -1,6 +1,5 @@
 import pygame
 import random
-import math
 
 
 class Circle:
@@ -45,14 +44,16 @@ def main() -> None:
     screen = pygame.display.set_mode([SCREEN_WIDTH, SCREEN_HEIGHT])
 
     running: bool = True
+    clicked = False
     while running:
 
         random.seed(1)
 
-        # Did the user click the window close button?
         for event in pygame.event.get():  # user input
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                clicked = True
 
         screen.fill((0, 0, 0))  # background
         line_ht = 2
@@ -78,14 +79,17 @@ def main() -> None:
             color_idx = random.randint(a=0, b=2)  # R, G, B
             circles.append(Circle(center=(x, y), radius=r, color=RGBColor(color_idx)))
 
-        for c in circles:
-            diameter = 2 * c.radius
-            y = col_to_idx(c.color) * line_ht
-            for _ in range(int(diameter / (3 * line_ht))):
-                line = pygame.Surface(size=(diameter, line_ht))
-                line.fill(c.color)
-                screen.blit(line, (c.center[0] - c.radius, c.center[1] - c.radius + y))
-                y += 3 * line_ht
+        if not clicked:
+            for c in circles:
+                diameter = 2 * c.radius
+                y = col_to_idx(c.color) * line_ht
+                for _ in range(int(diameter / (3 * line_ht))):
+                    line = pygame.Surface(size=(diameter, line_ht))
+                    line.fill(c.color)
+                    screen.blit(
+                        line, (c.center[0] - c.radius, c.center[1] - c.radius + y)
+                    )
+                    y += 3 * line_ht
 
         pygame.display.flip()  # update display content
 
