@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 
 
 class Circle:
@@ -8,6 +9,11 @@ class Circle:
         self.y = y
         self.color = color
         self.radius = radius
+        self.vel_x, self.vel_y = 0.01, 0.02
+
+    def tick(self, dt):
+        self.x += dt * self.vel_x
+        self.y += dt * self.vel_y
 
 
 class Game:
@@ -21,6 +27,8 @@ class Game:
 
         self.line_ht = line_ht
         self.screen = pygame.display.set_mode([self.SCREEN_WIDTH, self.SCREEN_HEIGHT])
+        self.clock = pygame.time.Clock()
+
         self.line_ht = 2
         self.circles = [
             Circle(
@@ -46,7 +54,7 @@ class Game:
             self.screen.blit(line, (0, y))
             y += self.line_ht
 
-    def draw_circles(self):
+    def draw_circles(self, dt):
         """draw mini circles"""
         for circle in self.circles:
             pygame.draw.circle(
@@ -55,19 +63,25 @@ class Game:
                 center=(circle.x, circle.y),
                 radius=circle.radius,
             )
+            circle.tick(dt)
 
         if not self.clicked:
             # draw lines over the circles
             for c in self.circles:
                 diameter = 2 * c.radius
                 y = Game.rgb2idx[c.color] * self.line_ht
-                for _ in range(int(diameter / (3 * self.line_ht))):
-                    line = pygame.Surface(size=(diameter, self.line_ht))
+                for _ in range(int(diameter // (3 * self.line_ht))):
+                    width_radius_at_y = math.sqrt(c.radius**2 - ((c.radius - y) ** 2))
+                    line = pygame.Surface(size=(2 * width_radius_at_y, self.line_ht))
                     line.fill(c.color)
-                    self.screen.blit(line, (c.x - c.radius, c.y - c.radius + y))
+                    self.screen.blit(
+                        line, (c.x - width_radius_at_y, c.y - c.radius + y)
+                    )
                     y += 3 * self.line_ht
 
     def tick(self) -> bool:
+        dt = self.clock.tick()
+
         running: bool = True
         for event in pygame.event.get():  # user input
             if event.type == pygame.QUIT:
@@ -82,7 +96,7 @@ class Game:
 
         self.draw_background()
 
-        self.draw_circles()
+        self.draw_circles(dt)
 
         return running
 
