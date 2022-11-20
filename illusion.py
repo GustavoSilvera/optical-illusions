@@ -1,4 +1,12 @@
-import pygame
+try:
+    import pygame
+except Exception as e:
+    print(f'Unable to import "pygame" that is required for this game to run! ({e})')
+    print()
+    print("try installing pygame (https://www.pygame.org/) with:")
+    print('  "pip install pygame"')
+    print("in your terminal")
+    exit(1)
 import random
 
 
@@ -53,6 +61,7 @@ class Game:
             )
             for i in range(20)
         ]
+        self.num_secrets = len(self.circles)
 
         # inputs
         self.clicked = None
@@ -78,8 +87,22 @@ class Game:
                     if circle.reveal == False:
                         print(
                             f'Revealed a "{self.rgb2str[circle.color]}" circle to be "BROWN"'
+                            f" -- (Secret {len(self.circles) - self.num_secrets + 1}/{len(self.circles)})"
                         )
+                        self.num_secrets -= 1
+                        if self.num_secrets == 0:
+                            self.win()
                     circle.reveal = True
+
+    def win(self):
+        print()
+        print("Congratulations you found all the secrets!")
+        print("As it turns out... All of these circles are actually the same colour!")
+        print("This is simply an optical illusion to for perceiving colours on circles")
+        print("similar to how we perceive colours on a pixel-based screen!")
+        print("Illusions are fun!")
+        print()
+        print("Press 'R' to restart the game")
 
     def draw_circles(self, dt):
         """draw mini circles"""
@@ -143,10 +166,9 @@ class Game:
                     if new_ht != self.line_ht:
                         print(f"Decreasing resolution from {self.line_ht} to {new_ht}")
                     self.line_ht = new_ht
-                elif event.key == pygame.K_R:
-                    # reset all circles' reveal property
-                    for c in self.circles:
-                        c.reveal = False
+                elif event.key == pygame.K_r:
+                    # reset the game
+                    self.__init__(self.SCREEN_HEIGHT, self.SCREEN_WIDTH)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.clicked = pygame.mouse.get_pos()
@@ -169,6 +191,17 @@ class Game:
 
 
 def main() -> None:
+    version = 1.0
+    print(f"Welcome to v{version:.1f} of Gustavo's illusion game!")
+    print()
+    print(f"Controls:")
+    print(f"Click on a circle to reveal its true colours!")
+    print(f'Up/Down arrows to change the "resolution"')
+    print(f"Press 'R' to reset the reveal status")
+    print(f"Press ESC to quit the game")
+    print()
+    print(f"Have fun!")
+
     pygame.init()
 
     # set resolution
