@@ -11,8 +11,9 @@ class Circle:
         self.y = y
         self.color = color
         self.radius = radius
-        self.vel_x = random.random() - 0.5  # random [-0.5, 0.5]
-        self.vel_y = random.random() - 0.5  # random [-0.5, 0.5]
+        self.vel_x = 0.3 * (random.random() - 0.5)
+        self.vel_y = 0.3 * (random.random() - 0.5)
+        self.reveal = False
 
     def tick(self, dt, ht, wt):
         self.x += dt * self.vel_x
@@ -46,14 +47,14 @@ class Game:
             Circle(
                 x=self.SCREEN_WIDTH * ((i % 9) % 3 + 1) / 4,
                 y=self.SCREEN_HEIGHT * ((i % 9) // 3 + 1) / 4,
-                radius=random.randint(a=20, b=50),
+                radius=random.randint(a=40, b=60),
                 color=Game.idx2rgb[random.randint(a=0, b=2)],
             )
             for i in range(20)
         ]
 
         # inputs
-        self.clicked = False
+        self.clicked = None
 
     def draw_background(self):
         self.screen.fill((0, 0, 0))  # background
@@ -69,6 +70,11 @@ class Game:
     def tick_circles(self, dt):
         for circle in self.circles:
             circle.tick(dt, self.SCREEN_HEIGHT, self.SCREEN_WIDTH)
+            if self.clicked is not None:
+                x, y = self.clicked
+                dist = ((x - circle.x) ** 2 + (y - circle.y) ** 2) ** 0.5
+                if dist < circle.radius:
+                    circle.reveal = True
 
     def draw_circles(self, dt):
         """draw mini circles"""
@@ -80,39 +86,38 @@ class Game:
                 radius=circle.radius,
             )
 
-        if not self.clicked:
-            # draw lines over the circles
-            for c in self.circles:
-                aligned_y = None
-                i = 0
-                # for i in range(int(diameter // (3 * self.line_ht))):
-                while aligned_y is None or aligned_y + self.line_ht < c.y + c.radius:
-                    # compute where the line is drawn to align with bg
-                    aligned_y = Game.rgb2idx[
-                        c.color
-                    ] * self.line_ht + 3 * self.line_ht * (
-                        int((c.y - c.radius) / (3 * self.line_ht)) + i
-                    )
-                    i += 1
-                    if aligned_y > c.y + c.radius:  # no extra bars beneath circle
-                        break
-                    if aligned_y + self.line_ht < c.y - c.radius:
-                        continue  # skip drawing if not overlapping circle!
-                    # compute how long the bar is (minimally overlapping!)
-                    top_ht = c.radius**2 - (c.y - aligned_y) ** 2
-                    top_ht = top_ht**0.5 if top_ht > 0 else -1
-                    next_y = aligned_y + self.line_ht  # one line down
-                    bot_ht = c.radius**2 - (c.y - next_y) ** 2
-                    bot_ht = bot_ht**0.5 if bot_ht > 0 else -1
+        # draw lines over the circles
+        for c in self.circles:
+            if c.reveal:
+                continue  # not drawing over this circle
+            aligned_y = None
+            i = 0
+            # for i in range(int(diameter // (3 * self.line_ht))):
+            while aligned_y is None or aligned_y + self.line_ht < c.y + c.radius:
+                # compute where the line is drawn to align with bg
+                aligned_y = Game.rgb2idx[c.color] * self.line_ht + 3 * self.line_ht * (
+                    int((c.y - c.radius) / (3 * self.line_ht)) + i
+                )
+                i += 1
+                if aligned_y > c.y + c.radius:  # no extra bars beneath circle
+                    break
+                if aligned_y + self.line_ht < c.y - c.radius:
+                    continue  # skip drawing if not overlapping circle!
+                # compute how long the bar is (minimally overlapping!)
+                top_ht = c.radius**2 - (c.y - aligned_y) ** 2
+                top_ht = top_ht**0.5 if top_ht > 0 else -1
+                next_y = aligned_y + self.line_ht  # one line down
+                bot_ht = c.radius**2 - (c.y - next_y) ** 2
+                bot_ht = bot_ht**0.5 if bot_ht > 0 else -1
 
-                    width_radius_at_y = max(top_ht, bot_ht)
-                    if width_radius_at_y <= 0:
-                        continue  # skip this one!
-                    line = pygame.Surface(size=(2 * width_radius_at_y, self.line_ht))
-                    # colour and draw the bar
-                    line.fill(c.color)
-                    self.screen.blit(line, (c.x - width_radius_at_y, aligned_y))
-                    # print(f"{aligned_y + self.line_ht} | {c.y + c.radius}  ||  {top_ht} {bot_ht}")
+                width_radius_at_y = max(top_ht, bot_ht)
+                if width_radius_at_y <= 0:
+                    continue  # skip this one!
+                line = pygame.Surface(size=(2 * width_radius_at_y, self.line_ht))
+                # colour and draw the bar
+                line.fill(c.color)
+                self.screen.blit(line, (c.x - width_radius_at_y, aligned_y))
+                # print(f"{aligned_y + self.line_ht} | {c.y + c.radius}  ||  {top_ht} {bot_ht}")
 
     def tick(self) -> bool:
         dt = self.clock.tick()
@@ -130,9 +135,9 @@ class Game:
                     self.line_ht = max(1, self.line_ht - 1)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                self.clicked = True
+                self.clicked = pygame.mouse.get_pos()
             elif event.type == pygame.MOUSEBUTTONUP:
-                self.clicked = False
+                self.clicked = None
             if event.type == pygame.VIDEORESIZE:
                 self.SCREEN_HEIGHT = event.h
                 self.SCREEN_WIDTH = event.w
