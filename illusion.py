@@ -52,6 +52,7 @@ class Game:
         self.clock = pygame.time.Clock()
 
         self.line_ht = 2
+        self._line_ht_bounds = (1, 20)
         self.circles = [
             Circle(
                 x=self.SCREEN_WIDTH * ((i % 9) % 3 + 1) / 4,
@@ -88,14 +89,14 @@ class Game:
                 dist = ((x - circle.x) ** 2 + (y - circle.y) ** 2) ** 0.5
                 if dist < circle.radius:
                     if circle.reveal == False:
+                        self.num_clicked[circle.color] += 1
                         num_clicked = sum(self.num_clicked.values())
                         print(
                             f'Revealed a "{self.rgb2str[circle.color]}" circle to be "BROWN"'
-                            f" -- (Secret {len(self.circles) - num_clicked + 1}/{len(self.circles)})"
+                            f" -- (Done {num_clicked}/{len(self.circles)})"
                         )
-                        self.num_clicked[circle.color] += 1
 
-                        if num_clicked == 0:
+                        if num_clicked == len(self.circles):
                             self.win()
                     circle.reveal = True
 
@@ -211,14 +212,14 @@ class Game:
                 if event.key == pygame.K_ESCAPE:
                     running = False
                 elif event.key == pygame.K_UP:
-                    new_ht = min(10, self.line_ht + 1)
-                    if new_ht != self.line_ht:
-                        print(f"Increasing resolution from {self.line_ht} to {new_ht}")
+                    new_ht = min(self._line_ht_bounds[1], self.line_ht + 1)
+                    # if new_ht != self.line_ht:
+                    #     print(f"Increasing resolution from {self.line_ht} to {new_ht}")
                     self.line_ht = new_ht
                 elif event.key == pygame.K_DOWN:
-                    new_ht = max(1, self.line_ht - 1)
-                    if new_ht != self.line_ht:
-                        print(f"Decreasing resolution from {self.line_ht} to {new_ht}")
+                    new_ht = max(self._line_ht_bounds[0], self.line_ht - 1)
+                    # if new_ht != self.line_ht:
+                    #     print(f"Decreasing resolution from {self.line_ht} to {new_ht}")
                     self.line_ht = new_ht
                 elif event.key == pygame.K_r:
                     # reset the game
@@ -228,6 +229,12 @@ class Game:
                 self.clicked = pygame.mouse.get_pos()
             elif event.type == pygame.MOUSEBUTTONUP:
                 self.clicked = None
+            elif event.type == pygame.MOUSEWHEEL:
+                sign = lambda x: -1 if x < 0 else 1
+                self.line_ht += sign(event.y)
+                self.line_ht = max(
+                    min(self.line_ht, self._line_ht_bounds[1]), self._line_ht_bounds[0]
+                )
             if event.type == pygame.VIDEORESIZE:
                 self.SCREEN_HEIGHT = event.h
                 self.SCREEN_WIDTH = event.w
