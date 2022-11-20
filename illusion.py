@@ -29,6 +29,7 @@ class Circle:
 class Game:
     idx2rgb = {0: (255, 0, 0), 1: (0, 255, 0), 2: (0, 0, 255)}
     rgb2idx = {value: key for key, value in idx2rgb.items()}
+    rgb2str = {(255, 0, 0): "RED", (0, 255, 0): "GREEN", (0, 0, 255): "BLUE"}
     circle_color = (181, 142, 53)  # the actual (background colour background)
 
     def __init__(self, h, w, line_ht=2):
@@ -42,7 +43,7 @@ class Game:
         pygame.display.set_caption("Gustavo's 85-211 E/A/C Illusion Game")
         self.clock = pygame.time.Clock()
 
-        self.line_ht = 1
+        self.line_ht = 2
         self.circles = [
             Circle(
                 x=self.SCREEN_WIDTH * ((i % 9) % 3 + 1) / 4,
@@ -74,6 +75,10 @@ class Game:
                 x, y = self.clicked
                 dist = ((x - circle.x) ** 2 + (y - circle.y) ** 2) ** 0.5
                 if dist < circle.radius:
+                    if circle.reveal == False:
+                        print(
+                            f'Revealed a "{self.rgb2str[circle.color]}" circle to be "BROWN"'
+                        )
                     circle.reveal = True
 
     def draw_circles(self, dt):
@@ -121,6 +126,7 @@ class Game:
         dt = self.clock.tick()
 
         running: bool = True
+        self.clicked = None
         for event in pygame.event.get():  # user input
             if event.type == pygame.QUIT:
                 running = False
@@ -128,9 +134,15 @@ class Game:
                 if event.key == pygame.K_ESCAPE:
                     running = False
                 elif event.key == pygame.K_UP:
-                    self.line_ht = min(10, self.line_ht + 1)
+                    new_ht = min(10, self.line_ht + 1)
+                    if new_ht != self.line_ht:
+                        print(f"Increasing resolution from {self.line_ht} to {new_ht}")
+                    self.line_ht = new_ht
                 elif event.key == pygame.K_DOWN:
-                    self.line_ht = max(1, self.line_ht - 1)
+                    new_ht = max(1, self.line_ht - 1)
+                    if new_ht != self.line_ht:
+                        print(f"Decreasing resolution from {self.line_ht} to {new_ht}")
+                    self.line_ht = new_ht
                 elif event.key == pygame.K_R:
                     # reset all circles' reveal property
                     for c in self.circles:
