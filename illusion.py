@@ -29,7 +29,6 @@ def randomize_colors():
         ((255, 0, 255), "PINK"),
         ((255, 255, 0), "YELLOW"),
         ((255, 255, 255), "WHITE"),
-        ((0, 0, 0), "BLACK"),
         ((255, 128, 0), "ORANGE"),
         ((102, 0, 204), "PURPLE"),
     ]
@@ -100,6 +99,7 @@ class Game:
         # inputs
         self.clicked = None
         self.paused = False
+        self.searching_for = None
 
     def draw_background(self):
         self.screen.fill((0, 0, 0))  # background
@@ -116,10 +116,10 @@ class Game:
         for circle in self.circles:
             if self.paused == False:
                 circle.tick(dt, self.SCREEN_HEIGHT, self.SCREEN_WIDTH)
-            if self.clicked is not None:
+            if self.clicked is not None and self.searching_for is not None:
                 x, y = self.clicked
                 dist = ((x - circle.x) ** 2 + (y - circle.y) ** 2) ** 0.5
-                if dist < circle.radius:
+                if self.searching_for == circle.color.str and dist < circle.radius:
                     if circle.reveal == False:
                         self.num_clicked[circle.color.rgb] += 1
                         num_clicked = sum(self.num_clicked.values())
@@ -200,7 +200,8 @@ class Game:
             for c in self.colours:
                 if self.num_clicked[c.rgb] != self.num_colors[c.rgb]:
                     break
-            msg = f"{c.str} circles : ({self.num_clicked[c.rgb]} / {self.num_colors[c.rgb]})"
+            self.searching_for = c.str
+            msg = f"{self.searching_for} circles : ({self.num_clicked[c.rgb]} / {self.num_colors[c.rgb]})"
         else:
             msg = f"Congratulations! You revealed all the secrets!!"
             # \nTurns out all the circles were brown!\nIncrease resolution to reveal this illusion
