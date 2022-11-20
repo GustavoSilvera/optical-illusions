@@ -61,7 +61,10 @@ class Game:
             )
             for i in range(20)
         ]
-        self.num_secrets = len(self.circles)
+        self.num_blue = len([c for c in self.circles if c.color == (0, 0, 255)])
+        self.num_green = len([c for c in self.circles if c.color == (0, 255, 0)])
+        self.num_red = len([c for c in self.circles if c.color == (255, 0, 0)])
+        self.num_clicked = {(255, 0, 0): 0, (0, 255, 0): 0, (0, 0, 255): 0}
 
         # inputs
         self.clicked = None
@@ -85,12 +88,14 @@ class Game:
                 dist = ((x - circle.x) ** 2 + (y - circle.y) ** 2) ** 0.5
                 if dist < circle.radius:
                     if circle.reveal == False:
+                        num_clicked = sum(self.num_clicked.values())
                         print(
                             f'Revealed a "{self.rgb2str[circle.color]}" circle to be "BROWN"'
-                            f" -- (Secret {len(self.circles) - self.num_secrets + 1}/{len(self.circles)})"
+                            f" -- (Secret {len(self.circles) - num_clicked + 1}/{len(self.circles)})"
                         )
-                        self.num_secrets -= 1
-                        if self.num_secrets == 0:
+                        self.num_clicked[circle.color] += 1
+
+                        if num_clicked == 0:
                             self.win()
                     circle.reveal = True
 
@@ -145,6 +150,55 @@ class Game:
                 self.screen.blit(line, (c.x - width_radius_at_y, aligned_y))
                 # print(f"{aligned_y + self.line_ht} | {c.y + c.radius}  ||  {top_ht} {bot_ht}")
 
+    def draw_text(self, dt: float):
+        pygame.display.set_caption("Text box")
+        font_str = "freesansbold.ttf"
+        font = pygame.font.Font(font_str, 32)
+
+        font_color = (255, 255, 0)
+        bg_color = (0, 0, 0)
+        """DRAW MAIN STATUS"""
+        msg = None
+        if sum(self.num_clicked.values()) < len(self.circles):
+            data = [
+                ((255, 0, 0), self.num_red),
+                ((0, 255, 0), self.num_green),
+                ((0, 0, 255), self.num_blue),
+            ]
+            for c, max_c in data:
+                if self.num_clicked[c] != max_c:
+                    break
+            msg = f"{self.rgb2str[c]} circles left: ({self.num_clicked[c]} / {max_c})"
+        else:
+            msg = f"Congratulations! You revealed all the secrets!!"
+            # \nTurns out all the circles were brown!\nIncrease resolution to reveal this illusion
+        if msg is not None:
+            text = font.render(
+                msg,
+                True,
+                font_color,
+                bg_color,
+            )
+            textRect = text.get_rect()
+            textRect.center = (self.SCREEN_WIDTH * 0.5, 50)
+            self.screen.blit(text, textRect)
+
+        """DRAW CURRENT RESOLUTION"""
+        chars = f"Resolution: {self.line_ht}"
+        text = font.render(
+            chars,
+            True,
+            font_color,
+            bg_color,
+        )
+        text_width, text_height = font.size(chars)
+        textRect = text.get_rect()
+        textRect.center = (
+            self.SCREEN_WIDTH - 0.5 * text_width - 10,  # 10 pixels from right edge
+            self.SCREEN_HEIGHT * 0.9,
+        )
+        self.screen.blit(text, textRect)
+
     def tick(self) -> bool:
         dt = self.clock.tick()
 
@@ -186,6 +240,8 @@ class Game:
         self.tick_circles(dt)
 
         self.draw_circles(dt)
+
+        self.draw_text(dt)
 
         return running
 

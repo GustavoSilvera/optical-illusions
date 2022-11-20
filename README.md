@@ -20,3 +20,5 @@ pip install -r requirements.txt
 ```bash
 python illusion.py
 ```
+
+![screenshot.jpg](screenshot.jpg)
