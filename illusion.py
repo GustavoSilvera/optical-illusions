@@ -1,6 +1,8 @@
 import pygame
 import random
-import math
+
+
+# TODO: also include an illusion with shading and ambiguous shape reconstruction
 
 
 class Circle:
@@ -39,7 +41,7 @@ class Game:
         pygame.display.set_caption("gsilvera's E/A/C Illusion game")
         self.clock = pygame.time.Clock()
 
-        self.line_ht = 2
+        self.line_ht = 5
         self.circles = [
             Circle(
                 x=self.SCREEN_WIDTH * ((i % 9) % 3 + 1) / 4,
@@ -47,7 +49,7 @@ class Game:
                 radius=min(self.SCREEN_HEIGHT, self.SCREEN_WIDTH) * 0.1,
                 color=Game.idx2rgb[random.randint(a=0, b=2)],
             )
-            for i in range(100)
+            for i in range(10)
         ]
 
         # inputs
@@ -64,6 +66,10 @@ class Game:
             self.screen.blit(line, (0, y))
             y += self.line_ht
 
+    def tick_circles(self, dt):
+        for circle in self.circles:
+            circle.tick(dt, self.SCREEN_HEIGHT, self.SCREEN_WIDTH)
+
     def draw_circles(self, dt):
         """draw mini circles"""
         for circle in self.circles:
@@ -73,21 +79,40 @@ class Game:
                 center=(circle.x, circle.y),
                 radius=circle.radius,
             )
-            circle.tick(dt, self.SCREEN_HEIGHT, self.SCREEN_WIDTH)
 
         if not self.clicked:
             # draw lines over the circles
             for c in self.circles:
-                diameter = 2 * c.radius
-                y = Game.rgb2idx[c.color] * self.line_ht
-                for _ in range(int(diameter // (3 * self.line_ht))):
-                    width_radius_at_y = math.sqrt(c.radius**2 - ((c.radius - y) ** 2))
-                    line = pygame.Surface(size=(2 * width_radius_at_y, self.line_ht))
-                    line.fill(c.color)
-                    self.screen.blit(
-                        line, (c.x - width_radius_at_y, c.y - c.radius + y)
+                aligned_y = None
+                i = 0
+                # for i in range(int(diameter // (3 * self.line_ht))):
+                while aligned_y is None or aligned_y + self.line_ht < c.y + c.radius:
+                    # compute where the line is drawn to align with bg
+                    aligned_y = Game.rgb2idx[
+                        c.color
+                    ] * self.line_ht + 3 * self.line_ht * (
+                        int((c.y - c.radius) / (3 * self.line_ht)) + i
                     )
-                    y += 3 * self.line_ht
+                    i += 1
+                    if aligned_y > c.y + c.radius:  # no extra bars beneath circle
+                        break
+                    if aligned_y + self.line_ht < c.y - c.radius:
+                        continue  # skip drawing if not overlapping circle!
+                    # compute how long the bar is (minimally overlapping!)
+                    top_ht = c.radius**2 - (c.y - aligned_y) ** 2
+                    top_ht = top_ht**0.5 if top_ht > 0 else -1
+                    next_y = aligned_y + self.line_ht  # one line down
+                    bot_ht = c.radius**2 - (c.y - next_y) ** 2
+                    bot_ht = bot_ht**0.5 if bot_ht > 0 else -1
+
+                    width_radius_at_y = max(top_ht, bot_ht)
+                    if width_radius_at_y <= 0:
+                        continue  # skip this one!
+                    line = pygame.Surface(size=(2 * width_radius_at_y, self.line_ht))
+                    # colour and draw the bar
+                    line.fill(c.color)
+                    self.screen.blit(line, (c.x - width_radius_at_y, aligned_y))
+                    # print(f"{aligned_y + self.line_ht} | {c.y + c.radius}  ||  {top_ht} {bot_ht}")
 
     def tick(self) -> bool:
         dt = self.clock.tick()
@@ -111,6 +136,8 @@ class Game:
                 )
 
         self.draw_background()
+
+        self.tick_circles(dt)
 
         self.draw_circles(dt)
 
