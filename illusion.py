@@ -190,7 +190,7 @@ class Game:
         return running
 
 
-def main() -> None:
+def welcome():
     version = 1.0
     print(f"Welcome to v{version:.1f} of Gustavo's illusion game!")
     print()
@@ -199,8 +199,23 @@ def main() -> None:
     print(f'Up/Down arrows to change the "resolution"')
     print(f"Press 'R' to reset the reveal status")
     print(f"Press ESC to quit the game")
+
+
+def instructions():
+    print()
+    print("INSTRUCTIONS:")
+    print("1. Reveal (click) all the BLUE circles")
+    print("2. Reveal (click) all the GREEN circles")
+    print("3. Reveal (click) all the RED circles")
     print()
     print(f"Have fun!")
+
+
+def main() -> None:
+    welcome()
+    # TODO: have mini games such as "select all the red circles first, then green, then blue"
+
+    instructions()
 
     pygame.init()
 
