@@ -12,7 +12,7 @@ This effect is strongest with the thinnest (and most frequent) rows, you can cha
 Also pay attention to the messages (both on screen and in the terminal) for further instructions!
 
 # Installation
-**NOTE** You can actually demo this game entirely in your browser here
+**NOTE** You can actually demo this game entirely in your browser [here](https://trinket.io/features/pygame)! Just paste everything from `illusion.py` into the `main.py` pane and click `RUN`
 
 The only dependency for this application is `python3` ([https://www.python.org/downloads/](https://www.python.org/downloads/)) and `pygame` ([https://www.pygame.org](https://www.pygame.org)).
 
