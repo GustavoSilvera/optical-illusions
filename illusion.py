@@ -78,16 +78,14 @@ class Game:
 
     def draw_circles(self, dt):
         """draw mini circles"""
-        for circle in self.circles:
+        for c in self.circles:
             pygame.draw.circle(
                 surface=self.screen,
                 color=Game.circle_color,
-                center=(circle.x, circle.y),
-                radius=circle.radius,
+                center=(c.x, c.y),
+                radius=c.radius,
             )
-
-        # draw lines over the circles
-        for c in self.circles:
+            # draw lines over the circles
             if c.reveal:
                 continue  # not drawing over this circle
             aligned_y = None
