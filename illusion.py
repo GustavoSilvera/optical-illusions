@@ -272,9 +272,9 @@ def welcome():
 def instructions():
     print()
     print("INSTRUCTIONS:")
-    print("1. Reveal (click) all the BLUE circles")
+    print("1. Reveal (click) all the RED circles")
     print("2. Reveal (click) all the GREEN circles")
-    print("3. Reveal (click) all the RED circles")
+    print("3. Reveal (click) all the BLUE circles")
     print()
     print(f"Have fun!")
 
