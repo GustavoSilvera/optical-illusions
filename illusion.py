@@ -20,12 +20,23 @@ class Color:
         self.str = name
 
 
-colours = [
-    Color((255, 0, 0), "RED", 0),
-    Color((0, 255, 0), "GREEN", 1),
-    Color((0, 0, 255), "BLUE", 2),
-    Color((255, 255, 0), "YELLOW", 3),
-]
+def randomize_colors():
+    all_colors = [
+        ((255, 0, 0), "RED"),
+        ((0, 255, 0), "GREEN"),
+        ((0, 0, 255), "BLUE"),
+        ((0, 255, 255), "CYAN"),
+        ((255, 0, 255), "PINK"),
+        ((255, 255, 0), "YELLOW"),
+        ((255, 255, 255), "WHITE"),
+        ((0, 0, 0), "BLACK"),
+        ((255, 128, 0), "ORANGE"),
+        ((102, 0, 204), "PURPLE"),
+    ]
+    num_colors = random.randint(a=2, b=4)
+    random.shuffle(all_colors)
+    final_colors = all_colors[:num_colors]
+    return [Color(rgb, name, i) for i, (rgb, name) in enumerate(final_colors)]
 
 
 class Circle:
@@ -54,6 +65,10 @@ class Game:
     circle_color = (181, 142, 53)  # the actual (background colour background)
 
     def __init__(self, h, w, line_ht=2):
+        self.colours = randomize_colors()
+        print(
+            f"Initializing game with {len(self.colours)} colours: {[c.str for c in self.colours]}"
+        )
         self.SCREEN_HEIGHT = h
         self.SCREEN_WIDTH = w
 
@@ -66,21 +81,21 @@ class Game:
 
         self.line_ht = 2
         self._line_ht_bounds = (1, 20)
-        self.num_cols = len(colours)
+        self.num_cols = len(self.colours)
         self.circles = [
             Circle(
                 x=self.SCREEN_WIDTH * ((i % 9) % 3 + 1) / 4,
                 y=self.SCREEN_HEIGHT * ((i % 9) // 3 + 1) / 4,
                 radius=random.randint(a=40, b=60),
-                color=colours[random.randint(a=0, b=len(colours) - 1)],
+                color=self.colours[random.randint(a=0, b=len(self.colours) - 1)],
             )
             for i in range(20)
         ]
         self.num_colors = {
             c.rgb: len([circ for circ in self.circles if circ.color.rgb == c.rgb])
-            for c in colours
+            for c in self.colours
         }
-        self.num_clicked = {c.rgb: 0 for c in colours}
+        self.num_clicked = {c.rgb: 0 for c in self.colours}
 
         # inputs
         self.clicked = None
@@ -92,7 +107,7 @@ class Game:
         y = 0
         for _ in range(self.SCREEN_HEIGHT // self.line_ht):
             line = pygame.Surface(size=(self.SCREEN_WIDTH, self.line_ht))
-            line.fill(colours[color_idx].rgb)
+            line.fill(self.colours[color_idx].rgb)
             color_idx = (color_idx + 1) % self.num_cols
             self.screen.blit(line, (0, y))
             y += self.line_ht
@@ -182,7 +197,7 @@ class Game:
         msg = None
         if sum(self.num_clicked.values()) < len(self.circles):
 
-            for c in colours:
+            for c in self.colours:
                 if self.num_clicked[c.rgb] != self.num_colors[c.rgb]:
                     break
             msg = f"{c.str} circles : ({self.num_clicked[c.rgb]} / {self.num_colors[c.rgb]})"
