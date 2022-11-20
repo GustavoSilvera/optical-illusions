@@ -38,18 +38,18 @@ class Game:
         self.screen = pygame.display.set_mode(
             [self.SCREEN_WIDTH, self.SCREEN_HEIGHT], pygame.RESIZABLE, vsync=60
         )
-        pygame.display.set_caption("gsilvera's E/A/C Illusion game")
+        pygame.display.set_caption("Gustavo's 85-211 E/A/C Illusion Game")
         self.clock = pygame.time.Clock()
 
-        self.line_ht = 5
+        self.line_ht = 1
         self.circles = [
             Circle(
                 x=self.SCREEN_WIDTH * ((i % 9) % 3 + 1) / 4,
                 y=self.SCREEN_HEIGHT * ((i % 9) // 3 + 1) / 4,
-                radius=min(self.SCREEN_HEIGHT, self.SCREEN_WIDTH) * 0.1,
+                radius=random.randint(a=20, b=50),
                 color=Game.idx2rgb[random.randint(a=0, b=2)],
             )
-            for i in range(10)
+            for i in range(20)
         ]
 
         # inputs
@@ -124,6 +124,11 @@ class Game:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     running = False
+                elif event.key == pygame.K_UP:
+                    self.line_ht = min(10, self.line_ht + 1)
+                elif event.key == pygame.K_DOWN:
+                    self.line_ht = max(1, self.line_ht - 1)
+
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.clicked = True
             elif event.type == pygame.MOUSEBUTTONUP:
