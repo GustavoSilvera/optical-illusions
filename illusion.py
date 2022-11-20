@@ -13,8 +13,23 @@ import random
 # TODO: also include an illusion with shading and ambiguous shape reconstruction
 
 
+class Color:
+    def __init__(self, rgb: tuple, name: str, idx: int):
+        self.rgb = rgb
+        self.idx = idx
+        self.str = name
+
+
+colours = [
+    Color((255, 0, 0), "RED", 0),
+    Color((0, 255, 0), "GREEN", 1),
+    Color((0, 0, 255), "BLUE", 2),
+    Color((255, 255, 0), "YELLOW", 3),
+]
+
+
 class Circle:
-    def __init__(self, x: float, y: float, color: tuple, radius: float):
+    def __init__(self, x: float, y: float, color: Color, radius: float):
         self.x = x
         self.y = y
         self.color = color
@@ -35,9 +50,7 @@ class Circle:
 
 
 class Game:
-    idx2rgb = {0: (255, 0, 0), 1: (0, 255, 0), 2: (0, 0, 255)}
-    rgb2idx = {value: key for key, value in idx2rgb.items()}
-    rgb2str = {(255, 0, 0): "RED", (0, 255, 0): "GREEN", (0, 0, 255): "BLUE"}
+
     circle_color = (181, 142, 53)  # the actual (background colour background)
 
     def __init__(self, h, w, line_ht=2):
@@ -53,19 +66,21 @@ class Game:
 
         self.line_ht = 2
         self._line_ht_bounds = (1, 20)
+        self.num_cols = len(colours)
         self.circles = [
             Circle(
                 x=self.SCREEN_WIDTH * ((i % 9) % 3 + 1) / 4,
                 y=self.SCREEN_HEIGHT * ((i % 9) // 3 + 1) / 4,
                 radius=random.randint(a=40, b=60),
-                color=Game.idx2rgb[random.randint(a=0, b=2)],
+                color=colours[random.randint(a=0, b=len(colours) - 1)],
             )
             for i in range(20)
         ]
-        self.num_blue = len([c for c in self.circles if c.color == (0, 0, 255)])
-        self.num_green = len([c for c in self.circles if c.color == (0, 255, 0)])
-        self.num_red = len([c for c in self.circles if c.color == (255, 0, 0)])
-        self.num_clicked = {(255, 0, 0): 0, (0, 255, 0): 0, (0, 0, 255): 0}
+        self.num_colors = {
+            c.rgb: len([circ for circ in self.circles if circ.color.rgb == c.rgb])
+            for c in colours
+        }
+        self.num_clicked = {c.rgb: 0 for c in colours}
 
         # inputs
         self.clicked = None
@@ -77,8 +92,8 @@ class Game:
         y = 0
         for _ in range(self.SCREEN_HEIGHT // self.line_ht):
             line = pygame.Surface(size=(self.SCREEN_WIDTH, self.line_ht))
-            line.fill(Game.idx2rgb[color_idx])
-            color_idx = (color_idx + 1) % 3
+            line.fill(colours[color_idx].rgb)
+            color_idx = (color_idx + 1) % self.num_cols
             self.screen.blit(line, (0, y))
             y += self.line_ht
 
@@ -91,10 +106,10 @@ class Game:
                 dist = ((x - circle.x) ** 2 + (y - circle.y) ** 2) ** 0.5
                 if dist < circle.radius:
                     if circle.reveal == False:
-                        self.num_clicked[circle.color] += 1
+                        self.num_clicked[circle.color.rgb] += 1
                         num_clicked = sum(self.num_clicked.values())
                         print(
-                            f'Revealed a "{self.rgb2str[circle.color]}" circle to be "BROWN"'
+                            f'Revealed a "{circle.color.str}" circle to be "BROWN"'
                             f" -- (Done {num_clicked}/{len(self.circles)})"
                         )
 
@@ -126,11 +141,14 @@ class Game:
                 continue  # not drawing over this circle
             aligned_y = None
             i = 0
-            # for i in range(int(diameter // (3 * self.line_ht))):
+            # for i in range(int(diameter // (self.num_cols * self.line_ht))):
             while aligned_y is None or aligned_y + self.line_ht < c.y + c.radius:
                 # compute where the line is drawn to align with bg
-                aligned_y = Game.rgb2idx[c.color] * self.line_ht + 3 * self.line_ht * (
-                    int((c.y - c.radius) / (3 * self.line_ht)) + i
+                aligned_y = (
+                    c.color.idx * self.line_ht
+                    + self.num_cols
+                    * self.line_ht
+                    * (int((c.y - c.radius) / (self.num_cols * self.line_ht)) + i)
                 )
                 i += 1
                 if aligned_y > c.y + c.radius:  # no extra bars beneath circle
@@ -149,7 +167,7 @@ class Game:
                     continue  # skip this one!
                 line = pygame.Surface(size=(2 * width_radius_at_y, self.line_ht))
                 # colour and draw the bar
-                line.fill(c.color)
+                line.fill(c.color.rgb)
                 self.screen.blit(line, (c.x - width_radius_at_y, aligned_y))
                 # print(f"{aligned_y + self.line_ht} | {c.y + c.radius}  ||  {top_ht} {bot_ht}")
 
@@ -163,15 +181,11 @@ class Game:
         """DRAW MAIN STATUS"""
         msg = None
         if sum(self.num_clicked.values()) < len(self.circles):
-            data = [
-                ((255, 0, 0), self.num_red),
-                ((0, 255, 0), self.num_green),
-                ((0, 0, 255), self.num_blue),
-            ]
-            for c, max_c in data:
-                if self.num_clicked[c] != max_c:
+
+            for c in colours:
+                if self.num_clicked[c.rgb] != self.num_colors[c.rgb]:
                     break
-            msg = f"{self.rgb2str[c]} circles left: ({self.num_clicked[c]} / {max_c})"
+            msg = f"{c.str} circles : ({self.num_clicked[c.rgb]} / {self.num_colors[c.rgb]})"
         else:
             msg = f"Congratulations! You revealed all the secrets!!"
             # \nTurns out all the circles were brown!\nIncrease resolution to reveal this illusion
