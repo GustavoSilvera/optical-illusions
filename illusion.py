@@ -36,6 +36,12 @@ def randomize_colors():
     random.shuffle(all_colors)
     final_colors = all_colors[:num_colors]
     return [Color(rgb, name, i) for i, (rgb, name) in enumerate(final_colors)]
+    # for debugging:
+    return [
+        Color((255, 0, 0), "RED", 0),
+        Color((0, 255, 0), "GREEN", 1),
+        Color((0, 0, 255), "BLUE", 2),
+    ]
 
 
 class Circle:
@@ -98,6 +104,7 @@ class Game:
 
         # inputs
         self.clicked = None
+        self.clicks = 0
         self.paused = False
         self.searching_for = None
 
@@ -124,7 +131,7 @@ class Game:
                         self.num_clicked[circle.color.rgb] += 1
                         num_clicked = sum(self.num_clicked.values())
                         print(
-                            f'Revealed a "{circle.color.str}" circle to be "BROWN"'
+                            f'Revealed a "{circle.color.str}" circle to be "BEIGE"'
                             f" -- (Done {num_clicked}/{len(self.circles)})"
                         )
 
@@ -135,6 +142,8 @@ class Game:
     def win(self):
         print()
         print("Congratulations you found all the secrets!")
+        score = 100 * (self.clicks / len(self.circles)) ** -1
+        print(f"You won with {self.clicks} clicks, achieving a score of {score:.1f}%")
         print("As it turns out... All of these circles are actually the same colour!")
         print("This is simply an optical illusion to for perceiving colours on circles")
         print("similar to how we perceive colours on a pixel-based screen!")
@@ -203,8 +212,9 @@ class Game:
             self.searching_for = c.str
             msg = f"{self.searching_for} circles : ({self.num_clicked[c.rgb]} / {self.num_colors[c.rgb]})"
         else:
-            msg = f"Congratulations! You revealed all the secrets!!"
-            # \nTurns out all the circles were brown!\nIncrease resolution to reveal this illusion
+            score = 100 * (self.clicks / len(self.circles)) ** -1
+            msg = f"You revealed everything with {self.clicks} clicks! ({score:.1f}%)"
+            # \nTurns out all the circles were BEIGE!\nIncrease resolution to reveal this illusion
         if msg is not None:
             text = font.render(
                 msg,
@@ -261,6 +271,7 @@ class Game:
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.clicked = pygame.mouse.get_pos()
+                self.clicks += 1
             elif event.type == pygame.MOUSEBUTTONUP:
                 self.clicked = None
             elif event.type == pygame.MOUSEWHEEL:
