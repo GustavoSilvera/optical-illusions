@@ -131,6 +131,10 @@ class Game:
                     self.line_ht = min(10, self.line_ht + 1)
                 elif event.key == pygame.K_DOWN:
                     self.line_ht = max(1, self.line_ht - 1)
+                elif event.key == pygame.K_R:
+                    # reset all circles' reveal property
+                    for c in self.circles:
+                        c.reveal = False
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.clicked = pygame.mouse.get_pos()
