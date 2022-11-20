@@ -69,6 +69,7 @@ class Game:
 
         # inputs
         self.clicked = None
+        self.paused = False
 
     def draw_background(self):
         self.screen.fill((0, 0, 0))  # background
@@ -83,7 +84,8 @@ class Game:
 
     def tick_circles(self, dt):
         for circle in self.circles:
-            circle.tick(dt, self.SCREEN_HEIGHT, self.SCREEN_WIDTH)
+            if self.paused == False:
+                circle.tick(dt, self.SCREEN_HEIGHT, self.SCREEN_WIDTH)
             if self.clicked is not None:
                 x, y = self.clicked
                 dist = ((x - circle.x) ** 2 + (y - circle.y) ** 2) ** 0.5
@@ -224,6 +226,8 @@ class Game:
                 elif event.key == pygame.K_r:
                     # reset the game
                     self.__init__(self.SCREEN_HEIGHT, self.SCREEN_WIDTH)
+                elif event.key == pygame.K_SPACE:
+                    self.paused = not self.paused
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 self.clicked = pygame.mouse.get_pos()
@@ -258,10 +262,11 @@ def welcome():
     print(f"Welcome to v{version:.1f} of Gustavo's illusion game!")
     print()
     print(f"Controls:")
-    print(f"Click on a circle to reveal its true colours!")
-    print(f'Up/Down arrows to change the "resolution"')
-    print(f"Press 'R' to reset the reveal status")
-    print(f"Press ESC to quit the game")
+    print(f" -- Click on a circle to reveal its true colours!")
+    print(f' -- Up/Down arrows to change the "resolution"')
+    print(f" -- Press 'R' to reset the reveal status")
+    print(f" -- Press SPACE to pause/unpause the game")
+    print(f" -- Press ESC to quit the game")
 
 
 def instructions():
