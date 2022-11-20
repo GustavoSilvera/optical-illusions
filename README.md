@@ -7,7 +7,7 @@
 Welcome to Gustavo's 85-211 E/A/C Fall 2022 project: Optical Illusions Minigame
 **Game**: This optical illusion minigame has you play through a game for catching (clicking) circles of various (randomized) colours. Your aim is to catch all the circles of a specific colour in the least number of clicks, so make sure you can interpret the colours correctly! Remember that two (or more) overlapping circles can save you a click!
 
-**Illusion**: If you look closely, all the circles are actually the same colour! There is an illusion based off which rows are rendered over each circle which skew our perception of colour (especially in motion!) and make it seem like the circles are coloured differently. This effect is strongest with the thinnest (and most frequent) rows, you can change this parameter (resolution) at runtime to see this effect for yourself!
+**Illusion**: If you look closely, all the circles are actually the same colour! There is an illusion based off which rows are rendered over each circle that skews our perception of colour (especially in motion!) and make it seem like the circles are coloured differently. I first saw this illusion from [here](https://www.syfy.com/syfy-wire/another-brain-frying-optical-illusion-what-color-are-these-spheres). This effect is strongest with the thinnest (and most frequent) rows, you can change this parameter (resolution) at runtime to see this effect for yourself!
 
 # Installation
 **NOTE** You can actually demo this game entirely in your browser [here](https://trinket.io/features/pygame)! Just paste everything from `illusion.py` into the `main.py` pane and click `RUN`
@@ -76,3 +76,6 @@ Illusions are fun!
 
 Press 'R' to restart the game
 ```
+
+## Acknowledgements
+- [Illusion blogpost - Phil Plait](https://www.syfy.com/syfy-wire/another-brain-frying-optical-illusion-what-color-are-these-spheres)
