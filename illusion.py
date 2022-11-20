@@ -322,7 +322,6 @@ def instructions():
 
 def main() -> None:
     welcome()
-    # TODO: have mini games such as "select all the red circles first, then green, then blue"
 
     instructions()
 
